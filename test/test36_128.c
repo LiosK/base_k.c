@@ -4,13 +4,14 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main() {
   uint8_t bytes[16];
   char encoded[26];
   uint8_t decoded[16];
 
-  for (int i = 0; i < 10000; i++) {
+  for (int i = 0; i < 20000; i++) {
     arc4random_buf(bytes, 16);
     base36_128_encode(bytes, encoded);
     printf("console.assert(0x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x"
@@ -21,18 +22,14 @@ int main() {
 
     int err = base36_128_decode(encoded, decoded);
     assert(err == 0);
-    for (int j = 0; j < 16; j++) {
-      assert(bytes[j] == decoded[j]);
-    }
+    assert(memcmp(bytes, decoded, 16) == 0);
 
     for (int j = 0; j < 25; j++) {
       encoded[j] = toupper(encoded[j]);
     }
     err = base36_128_decode(encoded, decoded);
     assert(err == 0);
-    for (int j = 0; j < 16; j++) {
-      assert(bytes[j] == decoded[j]);
-    }
+    assert(memcmp(bytes, decoded, 16) == 0);
   }
 
   printf("console.log(\"ok\");\n");
