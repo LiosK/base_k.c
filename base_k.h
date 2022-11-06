@@ -70,18 +70,19 @@ int base_k_convert_radix(uint8_t *dst, const uint8_t *src, int dst_radix,
       carry = carry * src_radix + src[j];
     }
 
-    // Iterate over dst from right while carry != 0 or up to place already used
-    int j = dst_size - 1;
-    for (; carry > 0 || j >= dst_used; j--) {
-      if (j < 0) {
-        return -1; // dst_size too small
-      }
+    // Iterate over dst from right but break when carry and rest of dst are 0
+    for (int j = dst_size - 1; j >= 0; j--) {
       carry += dst[j] * word_radix;
       dst[j] = carry % dst_radix;
       carry = carry / dst_radix;
+      if (carry == 0 && j <= dst_used) {
+        dst_used = j;
+        break;
+      }
     }
-    dst_used = j + 1;
-    assert(carry == 0 && dst_used >= 0);
+    if (carry != 0) {
+      return -1; // dst_size too small
+    }
   }
 #endif /* #ifdef BASE_K_USE_NAIVE */
 
